@@ -71,11 +71,13 @@ def display_question_page():
     # Go back button
     if st.button("Go Back"):
         st.session_state.page = 1
+        st.rerun()
     
     # Next button to navigate to the labeling page (third page)
     if st.button("Next"):
         # You can optionally add any validation to ensure questions are added before proceeding.
         if st.session_state.questions:
             st.session_state.page = 3  # Move to the labeling page
+            st.rerun()
         else:
             st.warning("Please add at least one question before proceeding.")
