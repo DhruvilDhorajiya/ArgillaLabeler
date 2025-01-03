@@ -59,7 +59,8 @@ def display_question_page():
     if st.session_state.questions:
         st.markdown("### Added Questions")
         for idx, question in enumerate(st.session_state.questions, start=1):
-            st.markdown(f"**{idx}. Label Description:** {question['label_description']}")
+            st.markdown(f"**{idx}. Question title:** {question['question_title']}")
+            st.markdown(f"**Question Description:** {question['label_description']}")
             st.markdown(f"**Question Type:** {question['question_type']}")
             if question['question_type'] in ["Label", "Multi-label"]:
                 st.markdown(f"**Labels:** {', '.join(question['labels'])}")
