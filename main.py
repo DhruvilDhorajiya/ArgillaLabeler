@@ -10,6 +10,7 @@ from upload_to_argilla_page import display_upload_to_argilla_page
 if 'page' not in st.session_state:
     st.session_state.page = 1  # Start on page 1
 
+
 # Main page display based on session state
 if st.session_state.page == 1:
     #display_upload_to_argilla_page()
