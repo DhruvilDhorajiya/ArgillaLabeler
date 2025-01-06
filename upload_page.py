@@ -37,6 +37,7 @@ def display_upload_page():
             if st.button("Next"):
                 if st.session_state.selected_columns:
                     st.session_state.page = 2  # Move to the next page
+                    st.rerun()
                 else:
                     st.warning("Please select at least one column before proceeding.")
 
