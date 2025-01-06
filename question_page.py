@@ -1,12 +1,22 @@
 import streamlit as st
 
+@st.fragment
 def display_question_page():
-
     # Initialize session state variables
     if "questions" not in st.session_state:
         st.session_state.questions = []
     if "selected_question_type" not in st.session_state:
         st.session_state.selected_question_type = "Label"  # Default to Label
+
+    # Initialize form-related session state variables
+    if "form_data_title" not in st.session_state:
+        st.session_state.form_data_title = ""
+    if "form_data_description" not in st.session_state:
+        st.session_state.form_data_description = ""
+    if "form_data_labels" not in st.session_state:
+        st.session_state.form_data_labels = ""
+    if "labels_input_key" not in st.session_state:
+        st.session_state.labels_input_key = "labels_input_0"
 
     st.markdown("### Add Questions and Related Information")
 
@@ -22,28 +32,38 @@ def display_question_page():
     st.session_state.selected_question_type = selected_question_type
 
     # Input fields for adding a question within a form
-    with st.form(key="add_question_form", clear_on_submit=True):
-        question_title = st.text_input("Describe Question Title (e.g., overall Quality):", key="question_title")
+    question_title = st.text_input(
+        "Describe Question Title (e.g., overall Quality):",
+        value=st.session_state.form_data_title,
+        key="question_title"
+    )
+    label_description = st.text_input(
+        "Describe Question information (e.g., overall Quality of LLM Response):",
+        value=st.session_state.form_data_description,
+        key="label_description"
+    )
 
-        # Label description input
-        label_description = st.text_input("Describe Question information (e.g., overall Quality of LLM Response):", key="label_description")
+    # Conditionally show labels input based on question type
+    labels = []
+    if st.session_state.selected_question_type in ["Label", "Multi-label"]:
+        st.markdown(f"**Define possible {st.session_state.selected_question_type.lower()} options (comma-separated):**")
+        labels_input_key = st.session_state.labels_input_key
+        labels_input = st.text_input(
+            "Example: Good, Average, Bad",
+            value=st.session_state.form_data_labels,
+            key=labels_input_key
+        )
+        labels = [label.strip() for label in labels_input.split(",") if label.strip()]
 
-        # Conditionally show labels input based on question type
-        labels = []
-        if st.session_state.selected_question_type in ["Label", "Multi-label"]:
-            st.markdown(f"**Define possible {st.session_state.selected_question_type.lower()} options (comma-separated):**")
-            labels_input = st.text_input("Example: Good, Average, Bad", key="labels_input")
-            labels = [label.strip() for label in labels_input.split(",") if label.strip()]
-
-        # Form submission button
-        submit_button = st.form_submit_button("Add Question")
+    submit_button = st.button("Add Question")
 
     # Handle form submission
     if submit_button:
+        # Validation checks for form fields
         if not label_description.strip():
             st.warning("Please provide a question description.")
         elif not question_title.strip():
-             st.warning("Please provide a question title.")
+            st.warning("Please provide a question title.")
         elif st.session_state.selected_question_type in ["Label", "Multi-label"] and not labels:
             st.warning("Please define at least one label.")
         else:
@@ -55,7 +75,26 @@ def display_question_page():
                 "labels": labels if st.session_state.selected_question_type in ["Label", "Multi-label"] else None,
             }
             st.session_state.questions.append(question_data)
+
             st.success("Question added successfully!")
+            
+            # Clear form fields only after valid submission
+            st.session_state.form_data_title = ""
+            st.session_state.form_data_description = ""
+            st.session_state.form_data_labels = ""
+
+            # Update the `labels_input_key` dynamically to reset the text input
+            st.session_state.labels_input_key = f"labels_input_{len(st.session_state.questions)}"
+
+            # Optionally, re-run the page
+            st.rerun()
+
+    # If validation fails, retain the data in the form
+    else:
+        # Store the current form inputs in session state if user hasn't clicked submit
+        st.session_state.form_data_title = question_title
+        st.session_state.form_data_description = label_description
+        st.session_state.form_data_labels = ", ".join(labels)
 
     # Display the list of added questions
     if st.session_state.questions:
@@ -68,16 +107,10 @@ def display_question_page():
                 st.markdown(f"**Labels:** {', '.join(question['labels'])}")
             st.markdown("---")
 
-    # Go back button
-    if st.button("Go Back"):
-        st.session_state.page = 1
-        st.rerun()
-    
-    # Next button to navigate to the labeling page (third page)
+    # Show "Next" button to navigate to the labeling page (third page)
     if st.button("Next"):
-        # You can optionally add any validation to ensure questions are added before proceeding.
         if st.session_state.questions:
             st.session_state.page = 3  # Move to the labeling page
-            st.rerun()
+            st.rerun()  # Re-run the app to update page state
         else:
             st.warning("Please add at least one question before proceeding.")
