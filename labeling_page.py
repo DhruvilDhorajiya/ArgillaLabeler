@@ -3,6 +3,7 @@ import pandas as pd
 
 def display_labeling_page():
     st.set_page_config(layout="wide")
+    st.title("Playground for Labelling before uploading to Argilla")
 
     # Ensure required session state variables are initialized
     if "current_index" not in st.session_state:
@@ -22,13 +23,6 @@ def display_labeling_page():
         if dataset is not None and selected_columns:
             st.markdown("#### Dataset Records")
 
-            if 0 <= st.session_state.current_index < len(dataset):
-                record = dataset[selected_columns].iloc[st.session_state.current_index]
-
-                for column in selected_columns:
-                    st.markdown(f"**{column}:**")
-                    st.markdown(f"{record[column]}")
-
             col1_nav, col2_nav = st.columns([1, 1])
             with col1_nav:
                 if st.button("Previous") and st.session_state.current_index > 0:
@@ -37,6 +31,15 @@ def display_labeling_page():
             with col2_nav:
                 if st.button("Next") and st.session_state.current_index < len(dataset) - 1:
                     st.session_state.current_index += 1
+
+            if 0 <= st.session_state.current_index < len(dataset):
+                record = dataset[selected_columns].iloc[st.session_state.current_index]
+
+                for column in selected_columns:
+                    st.markdown(f"**{column}:**")
+                    st.markdown(f"{record[column]}")
+
+            
 
     with col2:
         st.markdown("#### User Questions")
@@ -83,6 +86,9 @@ def display_labeling_page():
                 st.session_state.labeling_complete = True  # Mark labeling as complete
             else:
                 st.session_state.current_index += 1
+        if st.button("➡️ Upload to Argilla"):
+            st.session_state.page = 4  # Redirect to the upload page
+            st.rerun()
 
     # Save labeled data as CSV
     if st.session_state.get("labeling_complete"):
@@ -90,10 +96,4 @@ def display_labeling_page():
             labeled_df = pd.DataFrame(st.session_state.dataset)
             labeled_df.to_csv("labeled_data.csv", index=False)
             st.success("Labeled data saved as 'labeled_data.csv'!")
-            st.rerun()
-
-    # Show "Upload to Argilla" button if labeling is complete
-    if st.session_state.get("labeling_complete"):
-        if st.button("➡️ Upload to Argilla"):
-            st.session_state.page = 4  # Redirect to the upload page
             st.rerun()
