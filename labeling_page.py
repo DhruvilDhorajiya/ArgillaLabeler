@@ -76,6 +76,7 @@ def display_labeling_page():
                 st.session_state.dataset.loc[
                     st.session_state.current_index, question_title
                 ] = response
+            
 
             if st.session_state.current_index >= len(dataset) - 1:
                 st.success("🎉 All examples have been labeled!")
@@ -89,8 +90,10 @@ def display_labeling_page():
             labeled_df = pd.DataFrame(st.session_state.dataset)
             labeled_df.to_csv("labeled_data.csv", index=False)
             st.success("Labeled data saved as 'labeled_data.csv'!")
+            st.rerun()
 
     # Show "Upload to Argilla" button if labeling is complete
     if st.session_state.get("labeling_complete"):
         if st.button("➡️ Upload to Argilla"):
             st.session_state.page = 4  # Redirect to the upload page
+            st.rerun()
